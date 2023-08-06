@@ -22,7 +22,7 @@ function App() {
   return (
     <div>
       <h2>Regular Table</h2>
-      <TableComponent className="primary-table" headers={headers} rows={rows} tableName={'Contaract details'}/>
+      <TableComponent className="primary-table" headers={headers} rows={rows} tableName={'contract details'}/>
       <h2>Sort table</h2>
       <TableComponent className="primary-table" headers={headers} rows={rows} sortable={true} initSortColumnIndex={2}
                       initSortAscending={false}/>

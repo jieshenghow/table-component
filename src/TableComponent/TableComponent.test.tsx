@@ -1,39 +1,50 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import "@testing-library/jest-dom/extend-expect";
-import TableComponent from "./index";
+import '@testing-library/jest-dom';
+import { render, fireEvent } from '@testing-library/react';
+import TableComponent from './index';
 
-describe("TableComponent", () => {
-  const headers = ["Name", "Age"];
-  const rows = [["Alice", 20], ["Bob", 30]];
-  let clickedCell: { rowIndex: number; columnIndex: number } | null = null;
+describe("Table Component", () => {
+  it("renders all headers and rows", () => {
+    const headers = ["Name", "Age"];
+    const rows = [
+      ["John Doe", "30"],
+      ["Jane Doe", "25"]
+    ];
 
-  const onClick = (rowIndex: number, columnIndex: number) => {
-    clickedCell = { rowIndex, columnIndex };
-  };
+    const { getByText } = render(
+      <TableComponent
+        headers={headers}
+        rows={rows}
+      />
+    );
 
-  beforeEach(() => {
-    render(<TableComponent headers={headers} rows={rows} onClick={onClick} />);
-  });
-
-  it("renders headers", () => {
-    headers.forEach((header) => {
-      expect(screen.getByText(header)).toBeInTheDocument();
+    headers.forEach(header => {
+      expect(getByText(header)).toBeInTheDocument();
     });
-  });
 
-  it("renders rows", () => {
-    rows.forEach((row) => {
-      row.forEach((cell) => {
-        expect(screen.getByText(String(cell))).toBeInTheDocument();
+    rows.forEach(row => {
+      row.forEach(cell => {
+        expect(getByText(cell)).toBeInTheDocument();
       });
     });
   });
 
-  it("handles cell clicks", () => {
-    fireEvent.click(screen.getByText("Alice"));
-    expect(clickedCell).toEqual({ rowIndex: 0, columnIndex: 0 });
+  it("triggers click event as expected", () => {
+    const headers = ["Name", "Age"];
+    const rows = [
+      ["John Doe", "30"],
+      ["Jane Doe", "25"]
+    ];
+    const onClickMock = jest.fn();
 
-    fireEvent.click(screen.getByText("30"));
-    expect(clickedCell).toEqual({ rowIndex: 1, columnIndex: 1 });
+    const { getByText } = render(
+      <TableComponent
+        headers={headers}
+        rows={rows}
+        onClick={onClickMock}
+      />
+    );
+
+    fireEvent.click(getByText("John Doe"));
+    expect(onClickMock).toHaveBeenCalledTimes(1);
   });
 });

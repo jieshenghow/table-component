@@ -1,5 +1,6 @@
 import React, {useEffect, useRef, useState} from "react";
 import './style.css'
+import ErrorBoundary from "../ErrorBoundary";
 
 function isOverflowed(element: HTMLElement) {
   return element.scrollWidth > element.offsetWidth;
@@ -127,7 +128,6 @@ const TableComponent: React.FC<TableComponentProps> = ({
 
   useEffect(() => {
     if (tableRef.current) {
-      console.log("Is table off screen width?:", isOffScreen(tableRef.current));
       if (isOffScreen(tableRef.current)) {
         setIsCompact(true);
       }
@@ -178,97 +178,99 @@ const TableComponent: React.FC<TableComponentProps> = ({
 
 
   return (
-    <table ref={tableRef} className={className}>
-      <thead>
-      {
-        isCompact ? (
-          tableName !== '' && (
+    <ErrorBoundary>
+      <table ref={tableRef} className={className}>
+        <thead>
+        {
+          isCompact ? (
+            tableName !== '' && (
+              <tr>
+                <th></th>
+                {type && <th></th>}
+                <th>
+                  {tableName}
+                </th>
+                <th/>
+              </tr>
+            )
+          ) : (
             <tr>
               <th></th>
               {type && <th></th>}
-              <th>
-                {tableName}
-              </th>
-              <th/>
+              {headers.map((header, index) => (
+                <th
+                  key={index}
+                  onClick={() =>
+                    sortable &&
+                    (setSortColumnIndex(index), setAscending(index === sortColumnIndex ? !ascending : true))
+                  }
+                >
+                  {header}
+                  {
+                    sortable &&
+                      <img
+                          className={`${index === sortColumnIndex ? (ascending ? "arrow rotated" : "arrow") : "arrow"} sort-icon`}
+                          alt='sorting-icon'
+                          src={index === sortColumnIndex ? './icons/arrow.svg' : './icons/arrow-neutral.svg'}/>
+                  }
+                </th>
+              ))}
+              <th></th>
             </tr>
           )
-        ) : (
-          <tr>
-            <th></th>
-            {type && <th></th>}
-            {headers.map((header, index) => (
-              <th
-                key={index}
-                onClick={() =>
-                  sortable &&
-                  (setSortColumnIndex(index), setAscending(index === sortColumnIndex ? !ascending : true))
-                }
-              >
-                {header}
-                {
-                  sortable &&
-                    <img
-                        className={`${index === sortColumnIndex ? (ascending ? "arrow rotated" : "arrow") : "arrow"} sort-icon`}
-                        alt='sorting-icon'
-                        src={index === sortColumnIndex ? './icons/arrow.svg' : './icons/arrow-neutral.svg'}/>
-                }
-              </th>
-            ))}
-            <th></th>
-          </tr>
-        )
-      }
-      </thead>
-      <tbody>
-      {sortedRows.map((row, rowIndex) => (
-        <tr key={rowIndex}
-            style={{backgroundColor: selectedRows.includes(rowIndex) ? "#EFEDFD" : "transparent"}}>
-          <td></td>
-          {type === "radio" && (
-            <td className={`${isCompact ? 'align-top' : ''}`}>
-              <div className={`${isCompact ? 'mt-8' : ''}`}>
-                <RadioButton isChecked={selectedRows.includes(rowIndex)}
-                             onChange={() => handleRowChange(rowIndex, !selectedRows.includes(rowIndex))}/>
-              </div>
-            </td>
-          )}
-          {type === "checkbox" && (
-            <td className={`${isCompact ? 'align-top' : ''}`}>
-              <div className={`${isCompact ? 'mt-8' : ''}`}>
-                <CheckBox isChecked={selectedRows.includes(rowIndex)}
-                          onChange={() => handleRowChange(rowIndex, !selectedRows.includes(rowIndex))}/>
-              </div>
-            </td>
-          )}
-          {
-            isCompact ? (
-              <td>
-                {headers.map((header, index) => (
-                  <div key={index} className={' flex-row'}>
-                    <div className={'compact-header'}>
-                      {header}:
-                    </div>
-                    <div className={'compact-data flex items-center'}>
-                      {row[index]}
-                    </div>
-                  </div>
-                ))}
+        }
+        </thead>
+        <tbody>
+        {sortedRows.map((row, rowIndex) => (
+          <tr key={rowIndex}
+              style={{backgroundColor: selectedRows.includes(rowIndex) ? "#EFEDFD" : "transparent"}}>
+            <td></td>
+            {type === "radio" && (
+              <td className={`${isCompact ? 'align-top' : ''}`}>
+                <div className={`${isCompact ? 'mt-8' : ''}`}>
+                  <RadioButton isChecked={selectedRows.includes(rowIndex)}
+                               onChange={() => handleRowChange(rowIndex, !selectedRows.includes(rowIndex))}/>
+                </div>
               </td>
-            ) : (
-              row.map((col, colIndex) => (
-                <td data-label={headers[colIndex]} key={colIndex}
-                    onClick={() => onClick && onClick(rowIndex, colIndex)}>
-                  {col}
+            )}
+            {type === "checkbox" && (
+              <td className={`${isCompact ? 'align-top' : ''}`}>
+                <div className={`${isCompact ? 'mt-8' : ''}`}>
+                  <CheckBox isChecked={selectedRows.includes(rowIndex)}
+                            onChange={() => handleRowChange(rowIndex, !selectedRows.includes(rowIndex))}/>
+                </div>
+              </td>
+            )}
+            {
+              isCompact ? (
+                <td>
+                  {headers.map((header, index) => (
+                    <div key={index} className={' flex-row'}>
+                      <div className={'compact-header'}>
+                        {header}:
+                      </div>
+                      <div className={'compact-data flex items-center'}>
+                        {row[index]}
+                      </div>
+                    </div>
+                  ))}
                 </td>
-              ))
-            )
-          }
-          <td></td>
-        </tr>
+              ) : (
+                row.map((col, colIndex) => (
+                  <td data-label={headers[colIndex]} key={colIndex}
+                      onClick={() => onClick && onClick(rowIndex, colIndex)}>
+                    {col}
+                  </td>
+                ))
+              )
+            }
+            <td></td>
+          </tr>
 
-      ))}
-      </tbody>
-    </table>
+        ))}
+        </tbody>
+      </table>
+    </ErrorBoundary>
   );
 };
 
